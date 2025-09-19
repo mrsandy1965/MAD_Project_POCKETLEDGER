@@ -3,7 +3,7 @@ const userRoutes = require('./routes/userRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const receiptRoutes = require('./routes/receiptRoute');
 const authenticateToken = require('./middleware/authMiddleware');
-
+require('dotenv').config()
 const app = express();
 app.use(express.json());
 

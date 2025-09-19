@@ -16,9 +16,10 @@ exports.login = async (req, res) => {
       // Replace with hashed password check in production
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '200h' });
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '20d' });
     res.json({ token });
   } catch (err) {
+    console.log(err)
     res.status(500).json({ error: 'Login failed', details: err.message });
   }
 };
