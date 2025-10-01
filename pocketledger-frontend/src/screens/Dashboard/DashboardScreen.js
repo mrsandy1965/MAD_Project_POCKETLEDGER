@@ -2,63 +2,53 @@ import React from "react";
 import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Get screen width for responsive design
 const screenWidth = Dimensions.get("window").width;
 
-// --- Main Dashboard Screen ---
 export default function DashboardScreen() {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {/* Welcome Box */}
-          <View style={styles.welcomeBox}>
-            <Text style={styles.header}>Welcome Back!</Text>
-            <Text style={styles.subHeader}>
-              Here's a snapshot of your financial health.
-            </Text>
-          </View>
-  
-          {/* Stats Cards */}
-          <View style={styles.statsContainer}>
-            <StatCard
-              label="Total Revenue"
-              value="$6,250.00"
-              change="↑20.1% from last month"
-              changeColor="#34A853"
-              icon="↑"
-            />
-            <StatCard
-              label="Total Expenses"
-              value="$346.23"
-              change="↓18.1% from last month"
-              changeColor="#EA4335"
-              icon="↓"
-            />
-            <StatCard
-              label="Net Profit"
-              value="$5,903.77"
-              change="↑19% from last month"
-              changeColor="#34A853"
-              icon="$"
-            />
-          </View>
-  
-          {/* Profit & Loss Chart */}
-          <ProfitLossChart />
-  
-          {/* Spending by Category Chart */}
-          <SpendingByCategory />
-  
-          {/* 👇 New Recent Transactions Component */}
-          <RecentTransactions />
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
-  
-// --- Reusable Components ---
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.welcomeBox}>
+          <Text style={styles.header}>Welcome Back!</Text>
+          <Text style={styles.subHeader}>
+            Here's a snapshot of your financial health.
+          </Text>
+        </View>
 
-// Stat Card for top section
+        <View style={styles.statsContainer}>
+          <StatCard
+            label="Total Revenue"
+            value="$6,250.00"
+            change="↑20.1% from last month"
+            changeColor="#34A853"
+            icon="↑"
+          />
+          <StatCard
+            label="Total Expenses"
+            value="$346.23"
+            change="↓18.1% from last month"
+            changeColor="#EA4335"
+            icon="↓"
+          />
+          <StatCard
+            label="Net Profit"
+            value="$5,903.77"
+            change="↑19% from last month"
+            changeColor="#34A853"
+            icon="$"
+          />
+        </View>
+
+        <ProfitLossChart />
+
+        <SpendingByCategory />
+
+        <RecentTransactions />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
 const StatCard = ({ label, value, change, changeColor, icon }) => {
   return (
     <View style={styles.statCard}>
@@ -76,14 +66,12 @@ const StatCard = ({ label, value, change, changeColor, icon }) => {
   );
 };
 
-// Profit & Loss Chart Component
 const ProfitLossChart = () => {
   const yAxisLabels = ["$8k", "$6k", "$4k", "$2k", "$0k"];
   const incomeValue = 6250;
   const expenseValue = 346.23;
   const maxValue = 8000;
 
-  // Calculate vertical position (0% at bottom, 100% at top)
   const incomePosition = (incomeValue / maxValue) * 100;
   const expensePosition = (expenseValue / maxValue) * 100;
 
@@ -93,7 +81,6 @@ const ProfitLossChart = () => {
       <Text style={styles.cardSubtitle}>Monthly income vs. expenses.</Text>
 
       <View style={styles.chartContainer}>
-        {/* Y-Axis Labels */}
         <View style={styles.yAxis}>
           {yAxisLabels.map((label) => (
             <Text key={label} style={styles.yAxisLabel}>
@@ -102,34 +89,43 @@ const ProfitLossChart = () => {
           ))}
         </View>
 
-        {/* Chart Area */}
         <View style={styles.chartArea}>
-          {/* Dotted Lines */}
           {yAxisLabels.map((_, index) => (
             <View key={index} style={styles.dottedLine} />
           ))}
 
-          {/* Data Points */}
-          <View style={[styles.dataPointContainer, { bottom: `${incomePosition}%` }]}>
+          <View
+            style={[
+              styles.dataPointContainer,
+              { bottom: `${incomePosition}%` },
+            ]}
+          >
             <View style={[styles.dataPoint, { backgroundColor: "#34A853" }]} />
           </View>
-          <View style={[styles.dataPointContainer, { bottom: `${expensePosition}%` }]}>
+          <View
+            style={[
+              styles.dataPointContainer,
+              { bottom: `${expensePosition}%` },
+            ]}
+          >
             <View style={[styles.dataPoint, { backgroundColor: "#424242" }]} />
           </View>
 
-          {/* X-Axis Label */}
           <Text style={styles.xAxisLabel}>Jul</Text>
         </View>
       </View>
 
-      {/* Legend */}
       <View style={styles.legendContainer}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendColorBox, { backgroundColor: "#34A853" }]} />
+          <View
+            style={[styles.legendColorBox, { backgroundColor: "#34A853" }]}
+          />
           <Text style={styles.legendText}>Income</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendColorBox, { backgroundColor: "#424242" }]} />
+          <View
+            style={[styles.legendColorBox, { backgroundColor: "#424242" }]}
+          />
           <Text style={styles.legendText}>Expense</Text>
         </View>
       </View>
@@ -137,56 +133,102 @@ const ProfitLossChart = () => {
   );
 };
 
-
 const RecentTransactions = () => {
-    const transactionsData = [
-      { id: 1, vendor: 'Webflow', date: '2024-07-20', type: 'expense', category: 'Software', amount: 50.00 },
-      { id: 2, vendor: 'Client Project A', date: '2024-07-19', type: 'income', category: 'Client Work', amount: 2500.00 },
-      { id: 3, vendor: 'Amazon Web Services', date: '2024-07-18', type: 'expense', category: 'Hosting', amount: 125.50 },
-      { id: 4, vendor: 'Upwork', date: '2024-07-17', type: 'income', category: 'Freelance', amount: 750.00 },
-      { id: 5, vendor: 'Starbucks', date: '2024-07-16', type: 'expense', category: 'Meals', amount: 5.75 },
-    ];
-  
-    const formatCurrency = (value) => {
-      return `$${value.toFixed(2)}`;
-    };
-  
-    return (
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Recent Transactions</Text>
-        <Text style={styles.cardSubtitle}>A list of your most recent income and expenses.</Text>
-        
-        {/* Table Header */}
-        <View style={styles.tableHeader}>
-          <Text style={[styles.th, { flex: 2 }]}>Vendor</Text>
-          <Text style={[styles.th, { flex: 1.2 }]}>Type</Text>
-          <Text style={[styles.th, { flex: 1.5 }]}>Category</Text>
-          <Text style={[styles.th, { flex: 1, textAlign: 'right' }]}>Amount</Text>
-        </View>
-  
-        {/* Table Rows */}
-        {transactionsData.map((item) => (
-          <View key={item.id} style={styles.tableRow}>
-            <View style={{ flex: 2 }}>
-              <Text style={styles.tdVendor}>{item.vendor}</Text>
-              <Text style={styles.tdDate}>{item.date}</Text>
-            </View>
-            <View style={{ flex: 1.2, alignItems: 'flex-start' }}>
-              <View style={[styles.typePill, item.type === 'income' ? styles.incomePill : styles.expensePill]}>
-                <Text style={[styles.pillText, item.type === 'income' ? styles.incomePillText : styles.expensePillText]}>{item.type}</Text>
-              </View>
-            </View>
-            <Text style={[styles.td, { flex: 1.5 }]}>{item.category}</Text>
-            <Text style={[styles.td, styles.tdAmount, { flex: 1 }]}>{formatCurrency(item.amount)}</Text>
-          </View>
-        ))}
-      </View>
-    );
+  const transactionsData = [
+    {
+      id: 1,
+      vendor: "Webflow",
+      date: "2024-07-20",
+      type: "expense",
+      category: "Software",
+      amount: 50.0,
+    },
+    {
+      id: 2,
+      vendor: "Client Project A",
+      date: "2024-07-19",
+      type: "income",
+      category: "Client Work",
+      amount: 2500.0,
+    },
+    {
+      id: 3,
+      vendor: "Amazon Web Services",
+      date: "2024-07-18",
+      type: "expense",
+      category: "Hosting",
+      amount: 125.5,
+    },
+    {
+      id: 4,
+      vendor: "Upwork",
+      date: "2024-07-17",
+      type: "income",
+      category: "Freelance",
+      amount: 750.0,
+    },
+    {
+      id: 5,
+      vendor: "Starbucks",
+      date: "2024-07-16",
+      type: "expense",
+      category: "Meals",
+      amount: 5.75,
+    },
+  ];
+
+  const formatCurrency = (value) => {
+    return `$${value.toFixed(2)}`;
   };
 
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>Recent Transactions</Text>
+      <Text style={styles.cardSubtitle}>
+        A list of your most recent income and expenses.
+      </Text>
 
+      <View style={styles.tableHeader}>
+        <Text style={[styles.th, { flex: 2 }]}>Vendor</Text>
+        <Text style={[styles.th, { flex: 1.2 }]}>Type</Text>
+        <Text style={[styles.th, { flex: 1.5 }]}>Category</Text>
+        <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>Amount</Text>
+      </View>
+      {transactionsData.map((item) => (
+        <View key={item.id} style={styles.tableRow}>
+          <View style={{ flex: 2 }}>
+            <Text style={styles.tdVendor}>{item.vendor}</Text>
+            <Text style={styles.tdDate}>{item.date}</Text>
+          </View>
+          <View style={{ flex: 1.2, alignItems: "flex-start" }}>
+            <View
+              style={[
+                styles.typePill,
+                item.type === "income" ? styles.incomePill : styles.expensePill,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.pillText,
+                  item.type === "income"
+                    ? styles.incomePillText
+                    : styles.expensePillText,
+                ]}
+              >
+                {item.type}
+              </Text>
+            </View>
+          </View>
+          <Text style={[styles.td, { flex: 1.5 }]}>{item.category}</Text>
+          <Text style={[styles.td, styles.tdAmount, { flex: 1 }]}>
+            {formatCurrency(item.amount)}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+};
 
-// Spending by Category Component
 const SpendingByCategory = () => {
   const data = [
     { label: "Hosting", percentage: 95, color: "#4285F4" },
@@ -218,11 +260,10 @@ const SpendingByCategory = () => {
   );
 };
 
-// --- Styles ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F0F4F8", // A neutral, light background
+    backgroundColor: "#F0F4F8",
   },
   scrollContainer: {
     padding: 16,
@@ -240,16 +281,15 @@ const styles = StyleSheet.create({
     color: "#6A6A6A",
     marginTop: 4,
   },
-  // --- Stat Cards ---
   statsContainer: {
     flexDirection: "row",
-    flexWrap: "wrap", // <<< CHANGE: Allows cards to wrap to the next line
+    flexWrap: "wrap",
     marginBottom: 20,
     gap: 12,
   },
   statCard: {
     flex: 1,
-    minWidth: 160, // <<< CHANGE: Prevents cards from getting too small
+    minWidth: 160,
     backgroundColor: "#FFFFFF",
     padding: 16,
     borderRadius: 12,
@@ -289,7 +329,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#6A6A6A",
   },
-  // --- General Card Styles ---
   card: {
     backgroundColor: "#FFFFFF",
     padding: 20,
@@ -312,7 +351,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginBottom: 20,
   },
-  // --- P&L Chart ---
   chartContainer: {
     flexDirection: "row",
     height: 200,
@@ -349,8 +387,8 @@ const styles = StyleSheet.create({
   },
   dataPointContainer: {
     position: "absolute",
-    left: "48%", // Center the dot horizontally
-    transform: [{ translateX: -4 }], // Adjust for dot size
+    left: "48%",
+    transform: [{ translateX: -4 }],
   },
   dataPoint: {
     width: 8,
@@ -377,7 +415,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#6A6A6A",
   },
-  // --- Spending Chart ---
   barChartContainer: {
     marginTop: 10,
   },
@@ -400,66 +437,66 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   tableHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: "#F3F4F6",
   },
   th: {
     fontSize: 12,
-    fontWeight: 'bold',
-    color: '#6B7280',
-    textTransform: 'uppercase',
+    fontWeight: "bold",
+    color: "#6B7280",
+    textTransform: "uppercase",
   },
   tableRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: "#F3F4F6",
   },
   td: {
     fontSize: 14,
-    color: '#374151',
+    color: "#374151",
   },
   tdVendor: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontWeight: "bold",
+    color: "#111827",
   },
   tdDate: {
     fontSize: 12,
-    color: '#6B7280',
+    color: "#6B7280",
     marginTop: 2,
   },
   tdAmount: {
-    fontWeight: 'bold',
-    textAlign: 'right',
+    fontWeight: "bold",
+    textAlign: "right",
   },
   typePill: {
     borderRadius: 12,
     paddingVertical: 4,
     paddingHorizontal: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   incomePill: {
-    backgroundColor: '#DEF7EC',
+    backgroundColor: "#DEF7EC",
   },
   expensePill: {
-    backgroundColor: '#E0F2FE', // A light blue
+    backgroundColor: "#E0F2FE",
   },
   pillText: {
     fontSize: 12,
-    fontWeight: '500',
-    textTransform: 'capitalize',
+    fontWeight: "500",
+    textTransform: "capitalize",
   },
   incomePillText: {
-    color: '#047857',
+    color: "#047857",
   },
   expensePillText: {
-    color: '#0C4A6E',
+    color: "#0C4A6E",
   },
 });

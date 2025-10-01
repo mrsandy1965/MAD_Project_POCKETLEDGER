@@ -1,8 +1,8 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import FinanceHomeScreen from '../screens/Finance/FinanceHomeScreen';
-import ReportsScreen from '../screens/Reports/ReportsScreen';
-import InvoiceScreen from '../screens/Invoices/InvoiceScreen';
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import FinanceHomeScreen from "../screens/Finance/FinanceHomeScreen";
+import ReportsScreen from "../screens/Reports/ReportsScreen";
+import InvoiceScreen from "../screens/Invoices/InvoiceScreen";
 
 const Stack = createNativeStackNavigator();
 

@@ -17,7 +17,7 @@ model User {
 
 model Transaction {
   id        Int      @id @default(autoincrement())
-  type      String   // "income" or "expense"
+  type      String  
   amount    Float
   date      DateTime @default(now())
   category  String

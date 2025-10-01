@@ -12,7 +12,7 @@ export default function TransactionsStack() {
       <Stack.Screen 
         name="AddTransaction" 
         component={AddTransactionScreen} 
-        options={{ presentation: 'modal' }} // Opens the screen as a modal
+        options={{ presentation: 'modal' }}
       />
     </Stack.Navigator>
   );

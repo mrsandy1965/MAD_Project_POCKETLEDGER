@@ -6,10 +6,9 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 function toISODate(dateStr) {
-  // Handles DD.MM.YYYY or DD/MM/YYYY
   const match = dateStr ? dateStr.match(/(\d{2})[\.\/\-](\d{2})[\.\/\-](\d{4})/) : null;
   if (match) {
-    return `${match[3]}-${match[2]}-${match[1]}`; // YYYY-MM-DD
+    return `${match[3]}-${match[2]}-${match[1]}`; 
   }
   return null;
 }
@@ -23,7 +22,6 @@ exports.uploadReceipt = async (req, res) => {
     if (isNaN(userId)) {
       return res.status(400).json({ error: 'Invalid userId' });
     }
-    // Save transaction to DB (adjust model/fields as needed)
     const transaction = await prisma.transaction.create({
       data: {
         type: 'expense',
