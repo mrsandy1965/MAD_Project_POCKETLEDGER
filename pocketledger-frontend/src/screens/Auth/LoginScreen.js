@@ -85,7 +85,6 @@ export default function LoginScreen() {
           />
 
           {!!error && <Text style={styles.errorText}>{error}</Text>}
-          <Text style={styles.apiIndicator}>API: {getApiBaseUrl()}</Text>
 
           <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={authLoading}>
             {authLoading ? (
