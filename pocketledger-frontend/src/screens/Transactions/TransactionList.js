@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,58 +6,21 @@ import {
   StyleSheet,
   TouchableOpacity,
   useWindowDimensions,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { TransactionsContext } from "../../context/TransactionsContext";
-const initialTransactions = [
-  {
-    id: 1,
-    vendor: "Webflow",
-    date: "2024-07-20",
-    type: "expense",
-    category: "Software",
-    amount: 50.0,
-  },
-  {
-    id: 2,
-    vendor: "Client Project A",
-    date: "2024-07-19",
-    type: "income",
-    category: "Client Work",
-    amount: 2500.0,
-  },
-  {
-    id: 3,
-    vendor: "Amazon Web Services",
-    date: "2024-07-18",
-    type: "expense",
-    category: "Hosting",
-    amount: 125.5,
-  },
-  {
-    id: 4,
-    vendor: "Upwork",
-    date: "2024-07-17",
-    type: "income",
-    category: "Freelance",
-    amount: 750.0,
-  },
-];
+import { useTransactions } from "../../context/TransactionsContext";
 
 export default function TransactionList({ navigation }) {
-  const { transactions } = useContext(TransactionsContext);
+  const { transactions, loading, refreshTransactions } = useTransactions();
   const { width } = useWindowDimensions();
   const [filter, setFilter] = useState("All");
-  const allTransactions = useMemo(
-    () => [...transactions, ...initialTransactions],
-    [transactions]
-  );
 
   const filteredTransactions = useMemo(() => {
-    if (filter === "All") return allTransactions;
-    return allTransactions.filter((t) => t.type === filter.toLowerCase());
-  }, [filter, allTransactions]);
+    if (filter === "All") return transactions;
+    return transactions.filter((t) => t.type === filter.toLowerCase());
+  }, [filter, transactions]);
 
   const isWebView = width > 768;
 
@@ -91,7 +54,9 @@ export default function TransactionList({ navigation }) {
 
         {filteredTransactions.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No transactions found.</Text>
+            <Text style={styles.emptyText}>
+              {loading ? "Loading transactions..." : "No transactions found."}
+            </Text>
           </View>
         ) : (
           <FlatList
@@ -99,6 +64,13 @@ export default function TransactionList({ navigation }) {
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => <TransactionItem item={item} />}
             contentContainerStyle={styles.listContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={loading}
+                onRefresh={refreshTransactions}
+                tintColor="#007AFF"
+              />
+            }
           />
         )}
 
@@ -116,13 +88,18 @@ export default function TransactionList({ navigation }) {
 const TransactionItem = ({ item }) => {
   const formatCurrency = (value) => `$${Number(value).toFixed(2)}`;
   const isIncome = item.type === "income";
+  const title = item.vendor || item.title || item.category || "Entry";
+  const displayDate = item.date
+    ? new Date(item.date).toISOString().slice(0, 10)
+    : "";
 
   return (
     <View style={styles.itemContainer}>
       <View style={styles.itemDetails}>
-        <Text style={styles.itemVendor}>{item.vendor || item.text}</Text>
+        <Text style={styles.itemVendor}>{title}</Text>
         <Text style={styles.itemDate}>
-          {item.date} • {item.category}
+          {displayDate}
+          {item.category ? ` • ${item.category}` : ""}
         </Text>
       </View>
       <Text

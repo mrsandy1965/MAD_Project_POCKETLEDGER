@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,13 +6,40 @@ import {
   StyleSheet,
   useWindowDimensions,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { api } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function ReportsScreen({ navigation }) {
   const { width } = useWindowDimensions();
   const isWebView = width > 768;
+  const { token } = useAuth();
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchReport = async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const now = new Date();
+      const response = await api.reports.monthly(token, {
+        month: now.getMonth() + 1,
+        year: now.getFullYear(),
+      });
+      setReport(response.data || response);
+    } catch (err) {
+      console.warn("Failed to load report", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReport();
+  }, [token]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -21,6 +48,9 @@ export default function ReportsScreen({ navigation }) {
           styles.container,
           isWebView && styles.containerWeb,
         ]}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={fetchReport} />
+        }
       >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -33,42 +63,53 @@ export default function ReportsScreen({ navigation }) {
           A summary of your financial activity.
         </Text>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Monthly Summary (July)</Text>
-          <View style={styles.summaryChart}>
-            <Text style={styles.chartPlaceholderText}>
-              Chart will be displayed here
-            </Text>
-          </View>
-        </View>
+        {report ? (
+          <>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>
+                Monthly Summary ({report.month}/{report.year})
+              </Text>
+              <View style={styles.summaryChart}>
+                <Text style={styles.summaryLine}>
+                  Income: ${report.totalIncome?.toFixed(2) || "0.00"}
+                </Text>
+                <Text style={styles.summaryLine}>
+                  Expenses: ${report.totalExpenses?.toFixed(2) || "0.00"}
+                </Text>
+                <Text style={styles.summaryLine}>
+                  Profit: ${report.profit?.toFixed(2) || "0.00"}
+                </Text>
+              </View>
+            </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Spending by Category</Text>
-          <CategoryItem
-            category="Software"
-            amount={350}
-            percentage={45}
-            color="#3B82F6"
-          />
-          <CategoryItem
-            category="Hosting"
-            amount={200}
-            percentage={25}
-            color="#10B981"
-          />
-          <CategoryItem
-            category="Meals"
-            amount={150}
-            percentage={20}
-            color="#F97316"
-          />
-          <CategoryItem
-            category="Other"
-            amount={50}
-            percentage={10}
-            color="#6B7280"
-          />
-        </View>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Category Breakdown</Text>
+              {report.categoryBreakdown?.length ? (
+                report.categoryBreakdown.map((category) => (
+                  <CategoryItem
+                    key={category.category}
+                    category={category.category}
+                    amount={category.expense}
+                    percentage={Math.min(
+                      100,
+                      ((category.expense || 0) / (report.totalExpenses || 1)) *
+                        100
+                    )}
+                    color="#3B82F6"
+                  />
+                ))
+              ) : (
+                <Text style={styles.chartPlaceholderText}>
+                  No category data
+                </Text>
+              )}
+            </View>
+          </>
+        ) : (
+          <Text style={styles.chartPlaceholderText}>
+            {loading ? "Loading report..." : "No report data yet"}
+          </Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -135,6 +176,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  summaryLine: { fontSize: 16, fontWeight: "600", marginVertical: 4 },
   chartPlaceholderText: { color: "#9CA3AF", fontWeight: "500" },
   categoryItem: {
     flexDirection: "row",

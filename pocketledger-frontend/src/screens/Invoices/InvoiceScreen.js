@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,43 +6,42 @@ import {
   StyleSheet,
   TouchableOpacity,
   useWindowDimensions,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-
-const mockInvoices = [
-  {
-    id: "1",
-    client: "TechCorp",
-    amount: 1200,
-    status: "Paid",
-    date: "2024-07-15",
-  },
-  {
-    id: "2",
-    client: "Innovate LLC",
-    amount: 3500,
-    status: "Due",
-    date: "2024-08-01",
-  },
-  {
-    id: "3",
-    client: "DesignCo",
-    amount: 850,
-    status: "Overdue",
-    date: "2024-06-20",
-  },
-];
+import { api } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
 const statusStyles = {
-  Paid: { bg: "#DEF7EC", text: "#047857" },
-  Due: { bg: "#FEF3C7", text: "#B45309" },
-  Overdue: { bg: "#FEE2E2", text: "#B91C1C" },
+  paid: { bg: "#DEF7EC", text: "#047857", label: "Paid" },
+  unpaid: { bg: "#FEE2E2", text: "#B91C1C", label: "Unpaid" },
 };
 
 export default function InvoiceScreen({ navigation }) {
   const { width } = useWindowDimensions();
   const isWebView = width > 768;
+  const { token } = useAuth();
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchInvoices = async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const response = await api.invoices.list(token);
+      const payload = response.data || response;
+      setInvoices(payload.invoices || []);
+    } catch (err) {
+      console.warn("Failed to fetch invoices", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [token]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -62,38 +61,48 @@ export default function InvoiceScreen({ navigation }) {
         </View>
 
         <FlatList
-          data={mockInvoices}
+          data={invoices}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <InvoiceItem item={item} />}
+          refreshControl={
+            <RefreshControl refreshing={loading} onRefresh={fetchInvoices} />
+          }
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>
+              {loading ? "Loading invoices..." : "No invoices found"}
+            </Text>
+          }
         />
       </View>
     </SafeAreaView>
   );
 }
 
-const InvoiceItem = ({ item }) => (
-  <View style={styles.card}>
-    <View>
-      <Text style={styles.clientName}>{item.client}</Text>
-      <Text style={styles.invoiceDate}>Due: {item.date}</Text>
-    </View>
-    <View style={{ alignItems: "flex-end" }}>
-      <Text style={styles.invoiceAmount}>${item.amount.toFixed(2)}</Text>
-      <View
-        style={[
-          styles.statusPill,
-          { backgroundColor: statusStyles[item.status].bg },
-        ]}
-      >
-        <Text
-          style={[styles.statusText, { color: statusStyles[item.status].text }]}
-        >
-          {item.status}
+const InvoiceItem = ({ item }) => {
+  const statusKey = item.status?.toLowerCase() || "unpaid";
+  const statusConfig = statusStyles[statusKey] || statusStyles.unpaid;
+
+  return (
+    <View style={styles.card}>
+      <View>
+        <Text style={styles.clientName}>{item.clientName}</Text>
+        <Text style={styles.invoiceDate}>
+          Due: {new Date(item.date).toISOString().slice(0, 10)}
         </Text>
       </View>
+      <View style={{ alignItems: "flex-end" }}>
+        <Text style={styles.invoiceAmount}>${item.totalAmount.toFixed(2)}</Text>
+        <View
+          style={[styles.statusPill, { backgroundColor: statusConfig.bg }]}
+        >
+          <Text style={[styles.statusText, { color: statusConfig.text }]}>
+            {statusConfig.label}
+          </Text>
+        </View>
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#F0F4F8" },
@@ -137,4 +146,5 @@ const styles = StyleSheet.create({
   invoiceAmount: { fontSize: 16, fontWeight: "bold", marginBottom: 6 },
   statusPill: { borderRadius: 12, paddingVertical: 4, paddingHorizontal: 10 },
   statusText: { fontSize: 12, fontWeight: "600" },
+  emptyText: { textAlign: "center", marginTop: 40, color: "#6B7280" },
 });

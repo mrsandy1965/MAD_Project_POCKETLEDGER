@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,30 +8,42 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { TransactionsContext } from "../../context/TransactionsContext";
+import { useTransactions } from "../../context/TransactionsContext";
 
 export default function AddTransactionScreen({ navigation }) {
-  const { addTransaction } = useContext(TransactionsContext);
+  const { addTransaction } = useTransactions();
   const [type, setType] = useState("expense");
   const [vendor, setVendor] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!vendor || !amount || !category) {
       alert("Please fill all fields.");
       return;
     }
-    const newTransaction = {
-      id: Date.now(),
-      vendor,
-      amount: parseFloat(amount),
-      category,
-      type,
-      date: new Date().toISOString().split("T")[0],
-    };
-    addTransaction(newTransaction);
-    navigation.goBack();
+    const parsedAmount = parseFloat(amount);
+    if (Number.isNaN(parsedAmount)) {
+      alert("Please enter a valid amount");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await addTransaction({
+        title: vendor,
+        amount: parsedAmount,
+        category,
+        type,
+        date: new Date().toISOString(),
+      });
+      navigation.goBack();
+    } catch (err) {
+      // errors handled in context
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -94,8 +106,14 @@ export default function AddTransactionScreen({ navigation }) {
           onChangeText={setAmount}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleSave}>
-          <Text style={styles.buttonText}>Save Transaction</Text>
+        <TouchableOpacity
+          style={[styles.button, saving && { opacity: 0.6 }]}
+          onPress={handleSave}
+          disabled={saving}
+        >
+          <Text style={styles.buttonText}>
+            {saving ? "Saving..." : "Save Transaction"}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.cancelButton]}
