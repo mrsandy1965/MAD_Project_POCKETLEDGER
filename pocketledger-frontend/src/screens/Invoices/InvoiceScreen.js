@@ -10,8 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { api } from "../../services/api";
-import { useAuth } from "../../context/AuthContext";
+import { useInvoices } from "../../context/InvoicesContext";
 
 const statusStyles = {
   paid: { bg: "#DEF7EC", text: "#047857", label: "Paid" },
@@ -21,27 +20,7 @@ const statusStyles = {
 export default function InvoiceScreen({ navigation }) {
   const { width } = useWindowDimensions();
   const isWebView = width > 768;
-  const { token } = useAuth();
-  const [invoices, setInvoices] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const fetchInvoices = async () => {
-    if (!token) return;
-    setLoading(true);
-    try {
-      const response = await api.invoices.list(token);
-      const payload = response.data || response;
-      setInvoices(payload.invoices || []);
-    } catch (err) {
-      console.warn("Failed to fetch invoices", err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchInvoices();
-  }, [token]);
+  const { invoices, loading, fetchInvoices } = useInvoices();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -54,16 +33,16 @@ export default function InvoiceScreen({ navigation }) {
         </TouchableOpacity>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Invoices</Text>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('InvoiceCreate')}>
             <Ionicons name="add" size={20} color="#FFFFFF" />
             <Text style={styles.addButtonText}>New Invoice</Text>
           </TouchableOpacity>
         </View>
 
         <FlatList
-          data={invoices}
+            data={invoices}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <InvoiceItem item={item} />}
+            renderItem={({ item }) => <InvoiceItem item={item} navigation={navigation} />}
           refreshControl={
             <RefreshControl refreshing={loading} onRefresh={fetchInvoices} />
           }
@@ -78,12 +57,12 @@ export default function InvoiceScreen({ navigation }) {
   );
 }
 
-const InvoiceItem = ({ item }) => {
+const InvoiceItem = ({ item, navigation }) => {
   const statusKey = item.status?.toLowerCase() || "unpaid";
   const statusConfig = statusStyles[statusKey] || statusStyles.unpaid;
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('InvoiceDetail', { id: item.id })}>
       <View>
         <Text style={styles.clientName}>{item.clientName}</Text>
         <Text style={styles.invoiceDate}>
@@ -100,7 +79,7 @@ const InvoiceItem = ({ item }) => {
           </Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

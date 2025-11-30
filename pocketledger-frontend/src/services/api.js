@@ -1,10 +1,16 @@
 import Constants from "expo-constants";
+import { Platform } from "react-native";
 
-const DEFAULT_API_URL = "http://localhost:3000/api";
+const DEFAULT_API_URL = "http://localhost:8080/api";
 
 const expoExtraUrl = Constants.expoConfig?.extra?.apiBaseUrl;
 const envUrl = process.env.EXPO_PUBLIC_API_URL;
-const API_BASE_URL = (expoExtraUrl || envUrl || DEFAULT_API_URL).replace(/\/$/, "");
+let API_BASE_URL = (expoExtraUrl || envUrl || DEFAULT_API_URL).replace(/\/$/, "");
+
+// When running on Android emulator, replace localhost with emulator host
+if (Platform.OS === "android" && API_BASE_URL.includes("localhost")) {
+  API_BASE_URL = API_BASE_URL.replace("localhost", "10.0.2.2");
+}
 
 const buildHeaders = (token, customHeaders = {}) => {
   const headers = {
@@ -85,7 +91,9 @@ export const api = {
   invoices: {
     list: (token) => request("GET", "/invoices", { token }),
     create: (token, payload) => request("POST", "/invoices", { token, body: payload }),
+    get: (token, id) => request("GET", `/invoices/${id}`, { token }),
     update: (token, id, payload) => request("PUT", `/invoices/${id}`, { token, body: payload }),
+    remove: (token, id) => request("DELETE", `/invoices/${id}`, { token }),
   },
 };
 
