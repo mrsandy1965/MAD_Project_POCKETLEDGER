@@ -28,9 +28,15 @@ const buildHeaders = (token, customHeaders = {}) => {
 
 const handleResponse = async (response) => {
   const contentType = response.headers.get("content-type");
-  const data = contentType?.includes("application/json")
-    ? await response.json()
-    : await response.text();
+  let data;
+  
+  try {
+    data = contentType?.includes("application/json")
+      ? await response.json()
+      : await response.text();
+  } catch (parseError) {
+    throw new Error("Invalid response format from server");
+  }
 
   if (!response.ok) {
     const message = data?.message || response.statusText || "Request failed";
@@ -54,8 +60,15 @@ const request = async (method, path, { body, token, headers } = {}) => {
     options.body = JSON.stringify(body);
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, options);
-  return handleResponse(response);
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, options);
+    return handleResponse(response);
+  } catch (error) {
+    if (error.name === 'TypeError' || error.message.includes('Network request failed')) {
+      throw new Error('Network connection failed. Please check your internet connection and ensure the backend server is running.');
+    }
+    throw error;
+  }
 };
 
 export const api = {
